@@ -5,10 +5,22 @@ if (!url) {
     process.exit(1);
 }
 
-const REQUESTS = 10
-let totalBytes = 0
-let totalMs = 0
+async function downloadOnce(targetUrl) {
+  const startedAt = performance.now();
+  const response = await fetch(targetUrl);
 
-const res = await fetch(url)
-const buf = await res.arrayBuffer()
-console.log(buf.byteLength); 
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+  }
+
+  const body = await response.arrayBuffer();
+  const elapsedMs = performance.now() - startedAt;
+
+  return {
+    bytes: body.byteLength,
+    ms: elapsedMs,
+  };
+}
+
+const result = await downloadOnce(url);
+console.log(`Скачано ${(result.bytes / 1024 / 1024).toFixed(2)} МБ за ${result.ms.toFixed(0)} мс`);
